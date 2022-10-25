@@ -4,37 +4,32 @@ import { useState, useEffect } from "react";
 import Card from "react-bootstrap/Card";
 
 const APIkey = process.env.REACT_APP_API_KEY;
-// const APIkey = "4b0d1c5c1a6f2b04adf92c038fc18e73";
+const base_url = `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=${APIkey}`;
+
 function WeatherCard() {
   const [weatherCards, createCards] = useState({
     date: "",
     dayOfWeek: "",
     picture: "",
-    description: "",
+    desc: "",
     tempMax: "",
     tempMin: "",
     windSpeed: "",
   });
-  const fetchWeather = async () => {
-    let response = await fetch(
-      // "https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&exclude=daily&appid=4b0d1c5c1a6f2b04adf92c038fc18e73"
-      `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=${APIkey}`
-    );
-    let jsonResponse = await response.json();
-    console.log(jsonResponse);
-    createCards({
-      date: jsonResponse.dt,
-      dayOfWeek: "Tuesday",
-      picture: "",
-      description: "all is fine",
-      tempMax: jsonResponse.temp,
-      tempMin: jsonResponse.temp,
-      windSpeed: jsonResponse.wind_speed,
-    });
-  };
 
   useEffect(() => {
-    fetchWeather();
+    axios.get(base_url).then((res) =>
+      createCards({
+        date: res.dt,
+        dayOfWeek: "",
+        picture: "",
+        desc: res.data.weather[0].description,
+        tempMax: res.data.main.temp_max,
+        tempMin: res.data.main.temp_min,
+        windSpeed: res.data.wind.speed,
+      })
+    );
+    console.log(createCards.date);
   }, []);
 
   return (
@@ -44,12 +39,12 @@ function WeatherCard() {
       <Card.Body>
         <Card.Img variant="top" src={weatherCards.picture} />
         <Card.Title>
-          Some summary text describing the weather conditions{" "}
-          {weatherCards.description}
+          Some summary text describing the weather conditions:{" "}
+          {weatherCards.desc}
         </Card.Title>
-        <Card.Text>The maximum temperature {weatherCards.tempMax}</Card.Text>
-        <Card.Text>The minimum temperature {weatherCards.tempMin}</Card.Text>
-        <Card.Text>The wind speed {weatherCards.windSpeed}</Card.Text>
+        <Card.Text>The maximum temperature: {weatherCards.tempMax}</Card.Text>
+        <Card.Text>The minimum temperature: {weatherCards.tempMin}</Card.Text>
+        <Card.Text>The wind speed: {weatherCards.windSpeed}</Card.Text>
       </Card.Body>
     </Card>
   );
