@@ -2,57 +2,83 @@ import axios from "axios";
 import React from "react";
 import { useState, useEffect } from "react";
 import Card from "react-bootstrap/Card";
-import { Row, Col } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import "./WeatherCard.scss";
 
 const APIkey = process.env.REACT_APP_API_KEY;
-const base_url = `https://api.openweathermap.org/data/2.5/weather?lat=53.38&lon=-1.47&exclude=hourly,daily&appid=${APIkey}`;
 
 function WeatherCard() {
   const [weatherCards, createCards] = useState({
     date: "",
     dayOfWeek: "",
     picture: "",
-    desc: "",
+    description: "",
     tempMax: "",
     tempMin: "",
     windSpeed: "",
   });
 
-  useEffect(() => {
-    axios.get(base_url).then((res) =>
-      //    console.log(res.data)
-      createCards({
-        date: res.data.dt,
-        dayOfWeek: "",
-        picture: res.data.weather[0].icon,
-        desc: res.data.weather[0].description,
-        tempMax: res.data.main.temp_max,
-        tempMin: res.data.main.temp_min,
-        windSpeed: res.data.wind.speed,
-      })
+  const fetchWeather = async () => {
+    let response = await fetch(
+      // "https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&exclude=daily&appid=4b0d1c5c1a6f2b04adf92c038fc18e73"
+      `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=${APIkey}`
     );
+    let jsonResponse = await response.json();
+    console.log(jsonResponse);
+
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    let unixTimestamp = jsonResponse.dt;
+    let jsdate = new Date(unixTimestamp * 1000);
+    const nameDay = days[jsdate.getDay(jsdate)];
+    const month = months[jsdate.getMonth(jsdate)];
+    const date = jsdate.getDate(jsdate);
+
+    createCards({
+      date: date + " " + month,
+      dayOfWeek: nameDay,
+      picture: jsonResponse.weather[0].icon,
+      description: jsonResponse.weather[0].description,
+      tempMax: jsonResponse.main.temp_max,
+      tempMin: jsonResponse.main.temp_min,
+      windSpeed: jsonResponse.wind.speed,
+    });
+  };
+
+  useEffect(() => {
+    fetchWeather();
   }, []);
 
   return (
-    <Card style={{ width: "300px" }} className="card">
-      <Card.Header>The date {weatherCards.date}</Card.Header>
-      <Card.Header>Day of the week {weatherCards.dayOfWeek}</Card.Header>
+    <Card style={{ width: "300px" }}>
+      <Card.Header>
+        {weatherCards.date}, {weatherCards.dayOfWeek}
+      </Card.Header>
+
       <Card.Body>
-        {/* <Card.Img
-          variant="top"
-          src={createCards.picture}
-          alt={createCards.picture}
-        /> */}
-        <img src={createCards.picture} />
+        <Card.Img variant="top" src={weatherCards.picture} />
+        <Card.Title className="title">{weatherCards.description}</Card.Title>
 
-        <Card.Title className="title">{weatherCards.desc}</Card.Title>
-        <Row className="row">
-          <Col xs={8}>celcius</Col>
-
+        <Row>
+          <Col xs={8}>Celcius</Col>
           <Col>Wind</Col>
         </Row>
-        <Row className="row">
+        <Row>
           <Col>
             <Card.Text>max: {weatherCards.tempMax}</Card.Text>
           </Col>
@@ -60,12 +86,16 @@ function WeatherCard() {
             <Card.Text>min: {weatherCards.tempMin}</Card.Text>
           </Col>
           <Col>
-            <Card.Text> {weatherCards.windSpeed}</Card.Text>
+            <Card.Text>speed: {weatherCards.windSpeed}</Card.Text>
           </Col>
         </Row>
       </Card.Body>
     </Card>
   );
+  // let promise = fetch(
+  //   "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={lat}&lon={lon}&exclude={part}&appid={071b215412d0eab5fef2a63c265b5f06}"
+  // );
+  // console.log(promise);
 }
 
 export default WeatherCard;

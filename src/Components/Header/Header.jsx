@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import Button from "react-bootstrap/Button";
@@ -6,6 +6,16 @@ import Form from "react-bootstrap/Form";
 import "./Header.scss";
 
 function Header() {
+  const [location, setLocation] = useState({
+    london: "",
+    sheffield: "",
+    manchester: "",
+  });
+
+  const refreshSelect = (event) => {
+    setLocation(event.target.value);
+  };
+
   return (
     <Navbar bg="light" variant="light">
       <Container className="nav-container">
@@ -14,9 +24,9 @@ function Header() {
           <Form.Group className="mb-3">
             <Form.Label>select city</Form.Label>
             <Form.Select>
-              <option>London</option>
-              <option>Sheffield</option>
-              <option>Manchester</option>
+              <option value="london">London</option>
+              <option value="sheffield">Sheffield</option>
+              <option vallue="manchester">Manchester</option>
             </Form.Select>
           </Form.Group>
         </Form>
