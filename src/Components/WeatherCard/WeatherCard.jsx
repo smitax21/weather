@@ -19,14 +19,14 @@ function WeatherCard() {
     windSpeed: "",
   });
 
-  const fetchWeather = async () => {
+  const fetchWeather = async (lat, lon) => {
     let response = await fetch(
-      // "https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&exclude=daily&appid=4b0d1c5c1a6f2b04adf92c038fc18e73"
-      `https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=${APIkey}`
+      `https://api.openweathermap.org/data/2.5/weather?lat=53.38&lon=-1.47&appid=${APIkey}`
     );
     let jsonResponse = await response.json();
     console.log(jsonResponse);
 
+    // convert the date
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const months = [
       "Jan",
@@ -49,13 +49,19 @@ function WeatherCard() {
     const month = months[jsdate.getMonth(jsdate)];
     const date = jsdate.getDate(jsdate);
 
+    // convert kelvin to celcius
+    let kelvinMax = jsonResponse.main.temp_max;
+    let maxTemp = Math.floor(kelvinMax - 273.15);
+    let kelvinMin = jsonResponse.main.temp_min;
+    let minTemp = Math.floor(kelvinMin - 273.15);
+
     createCards({
       date: date + " " + month,
       dayOfWeek: nameDay,
       picture: jsonResponse.weather[0].icon,
       description: jsonResponse.weather[0].description,
-      tempMax: jsonResponse.main.temp_max,
-      tempMin: jsonResponse.main.temp_min,
+      tempMax: maxTemp,
+      tempMin: minTemp,
       windSpeed: jsonResponse.wind.speed,
     });
   };
@@ -67,11 +73,15 @@ function WeatherCard() {
   return (
     <Card style={{ width: "300px" }}>
       <Card.Header>
-        {weatherCards.date}, {weatherCards.dayOfWeek}
+        {weatherCards.date + ", "} {weatherCards.dayOfWeek}
       </Card.Header>
 
       <Card.Body>
-        <Card.Img variant="top" src={weatherCards.picture} />
+        <Card.Img
+          className="cardImage"
+          variant="top"
+          src={weatherCards.picture}
+        />
         <Card.Title className="title">{weatherCards.description}</Card.Title>
 
         <Row>
@@ -92,10 +102,6 @@ function WeatherCard() {
       </Card.Body>
     </Card>
   );
-  // let promise = fetch(
-  //   "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={lat}&lon={lon}&exclude={part}&appid={071b215412d0eab5fef2a63c265b5f06}"
-  // );
-  // console.log(promise);
 }
 
 export default WeatherCard;
