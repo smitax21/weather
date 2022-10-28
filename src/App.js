@@ -3,7 +3,8 @@ import WeatherCard from "./Components/WeatherCard/WeatherCard.jsx";
 import "./App.css";
 import { useState, useEffect } from "react";
 
-const APIkey = process.env.REACT_APP_API_KEY;
+// const APIkey = process.env.REACT_APP_API_KEY;
+const APIkey = "0e312365542424b227c1869e1b594948";
 
 function App() {
   const [location, setLocation] = useState({
@@ -75,13 +76,12 @@ function App() {
       tempMin: minTemp,
       windSpeed: item.wind.speed,
     });
+    console.log(items);
+    let filteredArr = items.filter((item) => {
+      return item.dt_txt.slice(-8) === "12:00:00";
+    });
 
-    // let arr = [1, 2, 3, 4];
-    // let filteredArr = arr.filter((item, index) => {
-    //   return item.dt > 10000;
-    // });
-
-    let parsedList = items.map((item, index) => {
+    let parsedList = filteredArr.map((item, index) => {
       let unixTimestamp = item.dt;
       let jsdate = new Date(unixTimestamp * 1000);
       const nameDay = days[jsdate.getDay(jsdate)];
@@ -118,7 +118,7 @@ function App() {
   return (
     <div className="App">
       <Header location={location} />
-      <div>
+      <div className="cards-wrap">
         <WeatherCard weatherCard={weatherCard} items={forecastList} />
       </div>
     </div>

@@ -27,7 +27,6 @@ function Header() {
           </Form.Group>
         </Form>
         <Button variant="primary">5 days forecast</Button>
-        <Button variant="primary">7 days forecast</Button>
       </Container>
     </Navbar>
   );
