@@ -7,11 +7,12 @@ const APIkey = process.env.REACT_APP_API_KEY;
 
 function App() {
   const [location, setLocation] = useState({
-    lat: "",
-    lon: "",
+    lat: 53.38,
+    lon: -1.47,
   });
 
-  const [weatherCards, createCards] = useState({
+  // Current day
+  const [weatherCard, changeWeatherCard] = useState({
     date: "",
     picture: "",
     description: "",
@@ -19,13 +20,16 @@ function App() {
     tempMin: "",
     windSpeed: "",
   });
+  const [forecastList, changeForecastList] = useState([]);
 
-  const fetchWeather = async () => {
+  const fetchWeather = async (lat, lon) => {
     let response = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=53.38&lon=-1.47&appid=${APIkey}`
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${location.lat}8&lon=${location.lon}&appid=${APIkey}`
     );
     let jsonResponse = await response.json();
-    console.log(jsonResponse);
+    let items = await jsonResponse.list;
+    // console.log(jsonResponse);
+    // console.log(items);
 
     // convert the date
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -44,106 +48,139 @@ function App() {
       "Dec",
     ];
 
-    let unixTimestamp = jsonResponse.list[0].dt;
+    const item = items[0];
+    let unixTimestamp = item.dt;
     let jsdate = new Date(unixTimestamp * 1000);
     const nameDay = days[jsdate.getDay(jsdate)];
     const month = months[jsdate.getMonth(jsdate)];
     const date = jsdate.getDate(jsdate);
 
     // convert kelvin to celcius
-    let kelvinMax = jsonResponse.list[0].main.temp_max;
+    let kelvinMax = item.main.temp_max;
     let maxTemp = Math.floor(kelvinMax - 273.15);
-    let kelvinMin = jsonResponse.list[0].main.temp_min;
+    let kelvinMin = item.main.temp_min;
     let minTemp = Math.floor(kelvinMin - 273.15);
 
     //convert icon code to image
-    let iconcode = jsonResponse.list[0].weather[0].icon;
+    let iconcode = item.weather[0].icon;
     let iconURL = "http://openweathermap.org/img/w/" + iconcode + ".png";
 
-    createCards({
+    // sets one parsed obejct into the weatherCards stateVariable
+    changeWeatherCard({
       date: date + "-" + month + "-" + nameDay,
+      // date: jsonResponse.list[0].dt_txt,
       picture: iconURL,
-      description: jsonResponse.list[0].weather[0].description,
+      description: item.weather[0].description,
       tempMax: maxTemp,
       tempMin: minTemp,
-      windSpeed: jsonResponse.list[0].wind.speed,
+      windSpeed: item.wind.speed,
     });
-  };
 
-  const getDatafor7days = async (lat, lon) => {
-    let url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${APIkey}`;
-    try {
-      let res = await fetch(url);
-      let data = await res.json();
-      console.log("data", data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    // let arr = [1, 2, 3, 4];
+    // let filteredArr = arr.filter((item, index) => {
+    //   return item.dt > 10000;
+    // });
 
-  // to handle location dymanicly
-  const handleLocation = async () => {
-    let london = document.getElementById("london").value;
-    let sheffield = document.getElementById("sheffield").value;
-    let manchester = document.getElementById("manchester").value;
-    if (location === london) {
-      let lat = 51.51;
-      let lon = -0.12;
-      let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
-      try {
-        let res = await fetch(url);
-        let data = await res.json();
-        console.log(data);
+    let parsedList = items.map((item, index) => {
+      let unixTimestamp = item.dt;
+      let jsdate = new Date(unixTimestamp * 1000);
+      const nameDay = days[jsdate.getDay(jsdate)];
+      const month = months[jsdate.getMonth(jsdate)];
+      const date = jsdate.getDate(jsdate);
 
-        getDatafor7days(lat, lon);
-      } catch (error) {}
-    } else if (manchester) {
-      let lat = 53.48;
-      let lon = -2.24;
-      let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
-      try {
-        let res = await fetch(url);
-        let data = await res.json();
-        console.log(data);
+      // convert kelvin to celcius
+      let kelvinMax = item.main.temp_max;
+      let maxTemp = Math.floor(kelvinMax - 273.15);
+      let kelvinMin = item.main.temp_min;
+      let minTemp = Math.floor(kelvinMin - 273.15);
 
-        getDatafor7days(lat, lon);
-      } catch (error) {}
-    } else if (sheffield) {
-      let lat = 53.38;
-      let lon = -1.47;
-      let url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
-      try {
-        let res = await fetch(url);
-        let data = await res.json();
-        console.log(data);
-
-        getDatafor7days(lat, lon);
-      } catch (error) {}
-    }
+      //convert icon code to image
+      let iconcode = item.weather[0].icon;
+      let iconURL = "http://openweathermap.org/img/w/" + iconcode + ".png";
+      return {
+        date: date + "-" + month + "-" + nameDay,
+        // date: jsonResponse.list[0].dt_txt,
+        picture: iconURL,
+        description: item.weather[0].description,
+        tempMax: maxTemp,
+        tempMin: minTemp,
+        windSpeed: item.wind.speed,
+      };
+    });
+    changeForecastList(parsedList);
   };
 
   useEffect(() => {
     fetchWeather();
-    getDatafor7days();
-    handleLocation();
+    // handleLocation();
   }, []);
 
-  // Parent needs to make the API calls,
-  // CHlidren need to receive the calls
-  // App.js: WIll make the initial call to get the default data:
-  //    Request to get the current days weather, get the 5 day forecast
-  //
-  //    function that will resend the request when the user changes the location
-  //        Passed down to the
-  //    Data Needs to be passed down to Weather Card
   return (
     <div className="App">
       <Header location={location} />
       <div>
-        <WeatherCard weatherCards={weatherCards} />
+        <WeatherCard weatherCard={weatherCard} items={forecastList} />
       </div>
     </div>
   );
 }
 
 export default App;
+
+// Parent needs to make the API calls,
+// CHlidren need to receive the calls
+// App.js: WIll make the initial call to get the default data:
+//    Request to get the current days weather, get the 5 day forecast
+//
+//    function that will resend the request when the user changes the location
+//        Passed down to the
+//    Data Needs to be passed down to Weather Card
+
+// to handle location dymanicly
+// const handleLocation = async () => {
+//   let london = document.getElementById("london").value;
+//   let manchester = document.getElementById("manchester").value;
+//   if (location === london) {
+//     setLocation({
+//       lat: 51.51,
+//       lon: -0.12,
+//     });
+//     let url = `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=${APIkey}`;
+//     try {
+//       let res = await fetch(url);
+//       let data = await res.json();
+//       console.log(data.city.coord.name);
+
+//       fetchWeather(location.lat, location.lon);
+//     } catch (error) {}
+//   } else if (manchester) {
+//     setLocation({
+//       lat: 53.48,
+//       lon: -2.24,
+//     });
+//     let url = `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=${APIkey}`;
+//     try {
+//       let res = await fetch(url);
+//       let data = await res.json();
+//       console.log(data.city.coord.name);
+
+//       fetchWeather(location.lat, location.lon);
+//     } catch (error) {}
+//   } else {
+//     setLocation({
+//       lat: 53.38,
+//       lon: -1.47,
+//     });
+
+//     let url = `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=${APIkey}`;
+//     try {
+//       let res = await fetch(url);
+//       let data = await res.json();
+//       console.log(data.city.coord.name);
+
+//       fetchWeather(location.lat, location.lon);
+//     } catch (error) {}
+//     // console.log(location);
+//   }
+// };
+// console.log(location);
